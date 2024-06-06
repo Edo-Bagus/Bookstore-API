@@ -13,8 +13,8 @@ def add_wishlist():
     customer_name = data.get('customer_name')
     book_name = data.get('book_name')
     store_name = data.get('store_name')
-    success = add_wishlist_service(customer_name, book_name, store_name)
+    success, error_msg = add_wishlist_service(customer_name, book_name, store_name)
     if success:
         return jsonify({'message': 'Wishlist added successfully'}), 200
     else:
-        return jsonify({'message': 'Error adding wishlist book'}), 500
+        return jsonify({'message': 'Error adding wishlist book', 'error': error_msg}), 500

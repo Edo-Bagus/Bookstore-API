@@ -6,44 +6,60 @@ def db_conn():
     return psycopg2.connect(url)
 
 def get_all_books():
-    connection = db_conn()
-    cursor = connection.cursor()
-    cursor.execute('''SELECT * FROM public."Book_View"''')
-    data = cursor.fetchall()
-    cursor.close()  
-    connection.close()
+    try:
+        connection = db_conn()
+        cursor = connection.cursor()
+        cursor.execute('''SELECT * FROM public."Book_View"''')
+        data = cursor.fetchall()
+        cursor.close()  
+        connection.close()
 
-    books = [Book(
-        book_id=book[0],
-        book_name=book[1],
-        publication_year=book[2],
-        pages=book[3],
-        price=book[4],
-        publisher_id=book[5],
-        language_id=book[6],
-        original_language_id=book[7]
-    ) for book in data]
-    return books
+        books = [Book(
+            book_id=book[0],
+            book_name=book[1],
+            publication_year=book[2],
+            pages=book[3],
+            price=book[4],
+            publisher_id=book[5],
+            language_id=book[6],
+            original_language_id=book[7]
+        ) for book in data]
+        print(books)
+        return books, None
+    except Exception as e:
+        return [], str(e)
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
 
 def get_books_by_author(author):
-    connection = db_conn()
-    cursor = connection.cursor()
-    cursor.execute('''SELECT * FROM public."Book_View" WHERE "BookID" IN ( SELECT DISTINCT "BookID" FROM public."Book_Author_Category_View" WHERE "AuthorName" = %s);''', (author,))
-    data = cursor.fetchall()
-    cursor.close()
-    connection.close()
+    try:
+        connection = db_conn()
+        cursor = connection.cursor()
+        cursor.execute('''SELECT * FROM public."Book_View" WHERE "BookID" IN ( SELECT DISTINCT "BookID" FROM public."Book_Author_Category_View" WHERE "AuthorName" = %s);''', (author,))
+        data = cursor.fetchall()
 
-    books = [Book(
-        book_id=book[0],
-        book_name=book[1],
-        publication_year=book[2],
-        pages=book[3],
-        price=book[4],
-        publisher_id=book[5],
-        language_id=book[6],
-        original_language_id=book[7]
-    ) for book in data]
-    return books
+        books = [Book(
+            book_id=book[0],
+            book_name=book[1],
+            publication_year=book[2],
+            pages=book[3],
+            price=book[4],
+            publisher_id=book[5],
+            language_id=book[6],
+            original_language_id=book[7]
+        ) for book in data]
+        if books:
+            return books, None
+        else:
+            raise ValueError('Book is not found')
+    except Exception as e:
+        return [], str(e)
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
 
 def delete_books_by_name(name):
     try: 
@@ -65,12 +81,11 @@ def delete_books_by_name(name):
             raise ValueError('Book not found')
         
         connection.commit()
-        return True
+        return True, None
     except Exception as e:
         if connection:
             connection.rollback()
-        print(f"Error deleting book: {str(e)}")
-        return False
+        return False, str(e)
     finally:
         if connection:
             cursor.close()
