@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from services.Service import add_review_service
+from services.Service import add_review_service, update_review_service
 
 reviews_bp = Blueprint('reviews', __name__)
 
@@ -19,3 +19,21 @@ def add_review():
         return jsonify({'message': 'Review added successfully'}), 200
     else:
         return jsonify({'message': 'Error adding review book', 'error': error_msg}), 500
+    
+@reviews_bp.route('/api/v1/update_review', methods=['PUT'])
+def update_review():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'Customer name, Book name, Description, and rating is required'})
+    
+    customer_name = data.get('customer_name')
+    book_name = data.get('book_name')
+    description = data.get('description')
+    rating = data.get('rating')
+    success, error_msg = update_review_service(customer_name, book_name, description, rating)
+    if success:
+        return jsonify({'message': 'Review updated successfully'}), 200
+    else:
+        return jsonify({'message': 'Error updating review book', 'error': error_msg}), 500
+

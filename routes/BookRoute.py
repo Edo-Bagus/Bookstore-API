@@ -18,17 +18,13 @@ def get_books():
             'original_language_id': book.original_language_id,
             'publisher_id': book.publisher_id,
         } for book in books]
-        return jsonify({'books': books_list})
-    else: return jsonify({'message': 'Failed to get book', 'error': error_msg})
+        return jsonify({'books': books_list}), 200
+    else: 
+        return jsonify({'message': 'Failed to get book', 'error': error_msg}), 404
 
-@books_bp.route('/api/v1/books_by_author', methods=['GET'])
-def get_books_by_author():
-    data = request.get_json()
+@books_bp.route('/api/v1/books/<author>', methods=['GET'])
+def get_books_by_author(author):
     
-    if not data:
-        return jsonify({'error': 'Author is required'}), 400
-    
-    author = data.get('author')
     books, error_msg = get_books_by_author_service(author)
     if books:
         books_list = [{
@@ -41,19 +37,13 @@ def get_books_by_author():
             'original_language_id': book.original_language_id,
             'publisher_id': book.publisher_id,
         } for book in books]
-        return jsonify({'books': books_list})
+        return jsonify({'books': books_list}), 200
     else:
-        return jsonify({'message': 'Failed to get book', 'error': error_msg})
+        return jsonify({'message': 'Failed to get book', 'error': error_msg}), 404
     
-@books_bp.route('/api/v1/delete_book', methods=['DELETE'])
-def delete_book_by_name():
-    data = request.get_json()
-
-    if not data:
-        return jsonify({'error': 'Book Name is required'}), 400
-    
-    name = data.get('book_name')
-    success, error_msg = delete_books_by_name_service(name)
+@books_bp.route('/api/v1/books/<book_name>', methods=['DELETE'])
+def delete_book_by_name(book_name):  
+    success, error_msg = delete_books_by_name_service(book_name)
     if success:
         return jsonify({'message': 'Book deleted successfully'}), 200
     else:
